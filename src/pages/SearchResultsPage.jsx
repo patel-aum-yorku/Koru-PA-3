@@ -61,10 +61,9 @@ const SearchResultsPage = () => {
   function fetchAIResults() {
     const searchLinksText = searchResults.map((link) => link.url).join(", ");
     const cohere_api_key = import.meta.env.VITE_COHERE_API_KEY;
-    const userPrompt = searchLinksText + "Go through all these links make sure it contains info related to the topic" + topic /
-      + " and tell which websites are not age appropriate and understandable by  " + grade + " and  why. Your response should be a json with schema " /
+    const userPrompt = searchLinksText + "Go through all these links make sure it contains info related to the topic " + topic + " and tell which websites are not age appropriate and understandable by " + grade + " and  why. Your response should be a json with schema " +
     "{'understandable_links': ['link1', 'link2'], 'not_understandable': [{'link3', 'why'}, {'link4', 'why'}] }";
-    // useEffect(() => {
+    
     console.log("User Prompt:", userPrompt);
     const fetchData = async () => {
       try {
