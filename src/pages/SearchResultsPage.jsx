@@ -32,6 +32,7 @@ const SearchResultsPage = () => {
 
   // function to fetch the search results
   const fetchSearchResults = async () => {
+    searchResults.length && setSearchResults([]); // Clear previous search results
     setLoading(true);
     try {
       // REPLACE THE API_KEY AND SEARCH_ENGINE_ID WITH YOUR OWN or You can use the one provided below if they work
@@ -45,13 +46,17 @@ const SearchResultsPage = () => {
 
       const results = response.data.items || [];
       setSearchResults(results.map((item) => ({ url: item.link, title: item.title })));
-      console.log("Search Results:", searchResults);
+      // console.log("Search Results:", searchResults);
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
     setLoading(false);
   };
-  
+
+  useEffect(() => {
+    console.log("Updated Search Results:", searchResults);
+  }, [searchResults]); // Runs whenever `searchResults` changes
+
   const toggleSelection = (url) => {
     setSelectedLinks((prev) =>
       prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]
