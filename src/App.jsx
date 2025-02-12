@@ -1,7 +1,7 @@
  import { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProjectForm from './pages/ProjectForm';
-
+import SearchResultsPage from './pages/SearchResultsPage';
 const App = () => {
 
 
@@ -10,7 +10,7 @@ const App = () => {
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<ProjectForm />} />
-          {/* <Route path="/catalog" element={<CatalogPage />} /> */}
+          <Route path="/search-results" element={<SearchResultsPage />} />
           {/* <Route path="/cart" element={<CartPage />} /> */}
           {/* <Route path="/login" element={<LoginPage />} /> */}
           </Routes>

@@ -1,5 +1,6 @@
 import  { useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const ProjectForm = () => {
   const [topic, setTopic] = useState("What is Climate change");
@@ -8,6 +9,10 @@ const ProjectForm = () => {
   const [restricted, setRestricted] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState("");
   const prompts = ["Climate Change Effects", "Causes of Climate Change", "Solutions to Climate Change"];
+  const navigate = useNavigate();
+  const handleSubmit = () => {
+    navigate(`/search-results?topic=${encodeURIComponent(topic)}&grade=${encodeURIComponent(grade)}&duedate=${encodeURIComponent(dueDate)}`);
+  };
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-800 text-white p-4">
@@ -80,7 +85,7 @@ const ProjectForm = () => {
           </select>
         </div>
         
-        <button className="w-full p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <button  onClick={handleSubmit} className="w-full p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
           Let’s cook
         </button>
       </div>
