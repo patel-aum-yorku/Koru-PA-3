@@ -28,12 +28,8 @@ const SearchResultsPage = () => {
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [topic, setTopic] = useState(initialTopic);
 
-  useEffect(() => {
-    if (topic) {
-      fetchSearchResults();
-    }
-  }, [topic]);
-
+ 
+// function to fetch the search results
   const fetchSearchResults = async () => {
     setLoading(true);
     try {
@@ -41,7 +37,7 @@ const SearchResultsPage = () => {
       const API_KEY = "AIzaSyCzpBXjwg6CxmQPCHyxEQWQmafDflGV1zo";// using api key of aumpatel810
       const SEARCH_ENGINE_ID = "53c7dfc4b32744282"; // using cx of aumhpatel
       const response = await axios.get(
-        `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${topic}`
+        `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${SEARCH_ENGINE_ID}&safe=active&q=${topic}`
       );
       console.log("API Response:", response.data);
       
