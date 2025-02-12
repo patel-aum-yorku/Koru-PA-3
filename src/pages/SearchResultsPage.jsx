@@ -28,26 +28,21 @@ const SearchResultsPage = () => {
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [topic, setTopic] = useState(initialTopic);
 
-  useEffect(() => {
-    if (topic) {
-      fetchSearchResults();
-    }
-  }, [topic]);
-
+ 
+// function to fetch the search results
   const fetchSearchResults = async () => {
     setLoading(true);
     try {
-      // Step 1: Fetch Google Search API results
-      const googleResponse = await axios.get(`/api/google-search?query=${topic}`);
-      const urls = googleResponse.data.urls;
+      // REPLACE THE API_KEY AND SEARCH_ENGINE_ID WITH YOUR OWN or You can use the one provided below if they work
+      const API_KEY = "AIzaSyCzpBXjwg6CxmQPCHyxEQWQmafDflGV1zo";// using api key of aumpatel810
+      const SEARCH_ENGINE_ID = "53c7dfc4b32744282"; // using cx of aumhpatel
+      const response = await axios.get(
+        `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${SEARCH_ENGINE_ID}&safe=active&q=${topic}`
+      );
+      console.log("API Response:", response.data);
       
-      // Step 2: Send URLs to Cohere AI for relevance filtering
-      const cohereResponse = await axios.post(`/api/cohere-filter`, {
-        urls,
-        grade
-      });
-      
-      setSearchResults(cohereResponse.data.filteredUrls);
+      const results = response.data.items || [];
+      setSearchResults(results.map((item) => ({ url: item.link, title: item.title })));
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
@@ -98,7 +93,7 @@ const SearchResultsPage = () => {
           )}
         </div>
         <div className="mt-4 text-red-400 text-sm">
-          <input type="checkbox"  className="mr-2" />
+          <input type="checkbox" checked readOnly className="mr-2" />
           Students are allowed to use AI text summarizer (By Default)
         </div>
         <button className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
@@ -108,5 +103,6 @@ const SearchResultsPage = () => {
     </div>
   );
 };
+
 
 export default SearchResultsPage;
