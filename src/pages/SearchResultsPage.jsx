@@ -98,7 +98,7 @@ const SearchResultsPage = () => {
           )}
         </div>
         <div className="mt-4 text-red-400 text-sm">
-          <input type="checkbox" checked readOnly className="mr-2" />
+          <input type="checkbox"  className="mr-2" />
           Students are allowed to use AI text summarizer (By Default)
         </div>
         <button className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
