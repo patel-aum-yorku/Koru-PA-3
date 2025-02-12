@@ -139,7 +139,8 @@ const SearchResultsPage = () => {
           <input type="checkbox" checked readOnly className="mr-2" />
           Students are allowed to use AI text summarizer (By Default)
         </div>
-        <button onClick={fetchAIResults} className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        {/*onClick={fetchAIResults}*/}
+        <button  className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
           Finalize
         </button>
       </div>
