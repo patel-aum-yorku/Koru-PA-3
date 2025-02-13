@@ -15,7 +15,7 @@ const ProjectForm = () => {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-800 text-white p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-800 text-white p-4">
       <div className="w-full max-w-lg p-6 bg-gray-900 rounded-lg shadow-lg border border-gray-700">
         <label className="block text-lg mb-2 text-center">What’s the topic for your project?</label>
         <div className="relative mb-4">

@@ -135,7 +135,7 @@ useEffect(() => {
 
 
   return (
-    <div className="h-screen flex flex-col items-center bg-gray-900 text-white p-4">
+    <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-4">
       <div className="w-full max-w-2xl p-6 bg-gray-800 rounded-lg shadow-lg border border-gray-700 text-center">
         <label className="block text-2xl text-orange-400 mb-4">Search for Information</label>
         <div className="relative w-full mb-4">
