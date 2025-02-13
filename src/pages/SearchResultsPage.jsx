@@ -15,7 +15,7 @@ const SearchResultsPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState([]);
-  const [topic, setTopic] = useState(initialTopic);
+  const [topic, setTopic] = useState(null);
   const [aiResults, setAIResults] = useState(null);
   const [aiLoading, setAILoading] = useState(false);
 
@@ -46,23 +46,22 @@ const SearchResultsPage = () => {
 
   // Save state to session storage whenever it changes (after initial mount)
   useEffect(() => {
-  if (!isInitialMount.current && searchResults.length > 0) {
-    sessionStorage.setItem("searchResults", JSON.stringify(searchResults));
-  }
-}, [searchResults]);
+    if (!isInitialMount.current && searchResults.length > 0) {
+      sessionStorage.setItem("searchResults", JSON.stringify(searchResults));
+    }
+  }, [searchResults]);
 
-useEffect(() => {
-  if (!isInitialMount.current && aiResults) {
-    sessionStorage.setItem("aiResults", JSON.stringify(aiResults));
-  }
-}, [aiResults]);
+  useEffect(() => {
+    if (!isInitialMount.current && aiResults) {
+      sessionStorage.setItem("aiResults", JSON.stringify(aiResults));
+    }
+  }, [aiResults]);
 
-useEffect(() => {
-  if (!isInitialMount.current && selectedLinks.length > 0) {
-    sessionStorage.setItem("selectedLinks", JSON.stringify(selectedLinks));
-  }
-}, [selectedLinks]);
-
+  useEffect(() => {
+    if (!isInitialMount.current && selectedLinks.length > 0) {
+      sessionStorage.setItem("selectedLinks", JSON.stringify(selectedLinks));
+    }
+  }, [selectedLinks]);
 
   const fetchSearchResults = async () => {
     console.log("Fetching new search results...");
@@ -133,6 +132,11 @@ useEffect(() => {
     );
   };
 
+  // Create a mapping of URLs to titles from the Google search results
+  const urlToTitleMap = searchResults.reduce((map, result) => {
+    map[result.url] = result.title;
+    return map;
+  }, {});
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-4">
@@ -174,11 +178,11 @@ useEffect(() => {
                   className="text-blue-400 hover:underline cursor-pointer"
                   onClick={() =>
                     navigate(`/article/${index}`, {
-                      state: { title: link, url: link },
+                      state: { title: urlToTitleMap[link] || link, url: link },
                     })
                   }
                 >
-                  {link}
+                  {urlToTitleMap[link] || link}
                 </span>
                 <a href={link} target="_blank" rel="noopener noreferrer" className="ml-2">
                   <FaExternalLinkAlt className="text-gray-400 hover:text-gray-200" />
@@ -201,11 +205,11 @@ useEffect(() => {
                       className="text-blue-400 hover:underline cursor-pointer"
                       onClick={() =>
                         navigate(`/article/${index}`, {
-                          state: { title: item.link, url: item.link },
+                          state: { title: urlToTitleMap[item.link] || item.link, url: item.link },
                         })
                       }
                     >
-                      {item.link}
+                      {urlToTitleMap[item.link] || item.link}
                     </span>
                   </div>
                   <a href={item.link} target="_blank" rel="noopener noreferrer" className="ml-2">

@@ -61,7 +61,7 @@ const ProjectForm = () => {
           </div>
         </div>
         
-        <div className="flex items-center mb-4">
+        {/* <div className="flex items-center mb-4">
           <input
             type="checkbox"
             checked={restricted}
@@ -70,8 +70,8 @@ const ProjectForm = () => {
           />
           <label>Restricted Search (only keywords selected could be searched by students)</label>
         </div>
-        
-        <div className="mb-4">
+         */}
+        {/* <div className="mb-4">
           <label className="block mb-1">Select Multiple Prompts or Add Your Own:</label>
           <select
             value={selectedPrompt}
@@ -83,7 +83,7 @@ const ProjectForm = () => {
               <option key={index} value={prompt}>{prompt}</option>
             ))}
           </select>
-        </div>
+        </div> */}
         
         <button  onClick={handleSubmit} className="w-full p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
           Let’s cook
