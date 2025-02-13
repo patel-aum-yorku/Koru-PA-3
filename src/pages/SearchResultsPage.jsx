@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaSearch, FaExternalLinkAlt } from "react-icons/fa";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -16,11 +16,58 @@ const SearchResultsPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [topic, setTopic] = useState(initialTopic);
-  const [aiResults, setAIResults] = useState(null); // Store AI results
-  const [aiLoading, setAILoading] = useState(false); // Track AI loading state
+  const [aiResults, setAIResults] = useState(null);
+  const [aiLoading, setAILoading] = useState(false);
+
+  const isInitialMount = useRef(true); // Track initial mount
+
+  // Load saved state from session storage on component mount
+  useEffect(() => {
+    const savedSearchResults = sessionStorage.getItem("searchResults");
+    const savedAIResults = sessionStorage.getItem("aiResults");
+    const savedSelectedLinks = sessionStorage.getItem("selectedLinks");
+
+    if (savedSearchResults && JSON.parse(savedSearchResults).length > 0) {
+      setSearchResults(JSON.parse(savedSearchResults));
+    }
+    if (savedAIResults) {
+      try {
+        setAIResults(JSON.parse(savedAIResults));
+      } catch (error) {
+        console.error("Error parsing AI results from sessionStorage:", error);
+      }
+    }
+    if (savedSelectedLinks) {
+      setSelectedLinks(JSON.parse(savedSelectedLinks));
+    }
+
+    isInitialMount.current = false;
+  }, []);
+
+  // Save state to session storage whenever it changes (after initial mount)
+  useEffect(() => {
+  if (!isInitialMount.current && searchResults.length > 0) {
+    sessionStorage.setItem("searchResults", JSON.stringify(searchResults));
+  }
+}, [searchResults]);
+
+useEffect(() => {
+  if (!isInitialMount.current && aiResults) {
+    sessionStorage.setItem("aiResults", JSON.stringify(aiResults));
+  }
+}, [aiResults]);
+
+useEffect(() => {
+  if (!isInitialMount.current && selectedLinks.length > 0) {
+    sessionStorage.setItem("selectedLinks", JSON.stringify(selectedLinks));
+  }
+}, [selectedLinks]);
+
 
   const fetchSearchResults = async () => {
+    console.log("Fetching new search results...");
     setAIResults(null); // Reset AI results when a new search is performed
+    sessionStorage.removeItem("aiResults"); // Clear saved AI results
     searchResults.length && setSearchResults([]); // Clear previous search results
     setLoading(true);
     try {
@@ -37,58 +84,55 @@ const SearchResultsPage = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    console.log("Updated Ai Results:", aiResults);
-  }, [aiResults]); // Runs whenever `aiResponse` changes
-
-  // Out of all these links tell me which are age appropriate and understandable for 9th Grade student, tell which ones are not and why Not the json
-  function fetchAIResults() {
+  const fetchAIResults = async () => {
+    console.log("Fetching AI results...");
     const searchLinksText = searchResults.map((link) => link.url).join(", ");
     const cohere_api_key = import.meta.env.VITE_COHERE_API_KEY;
     const userPrompt = searchLinksText + "Go through all these links make sure it contains info related to the topic " + topic + " and tell which websites are not age appropriate and understandable by " + grade + " and  why. Your response should be a json with schema " +
       "{'understandable_links': ['link1', 'link2'], 'not_understandable': [{'link3', 'why'}, {'link4', 'why'}] }";
 
-    console.log("User Prompt:", userPrompt);
-    const fetchData = async () => {
-      setAILoading(true); // Set AI loading to true when the request starts
-      try {
-        const response = await axios.post(
-          "https://api.cohere.com/v2/chat",
-          {
-            model: "command-r-plus",
-            messages: [{ role: "user", content: userPrompt }],
+    setAILoading(true);
+    try {
+      const response = await axios.post(
+        "https://api.cohere.com/v2/chat",
+        {
+          model: "command-r-plus",
+          messages: [{ role: "user", content: userPrompt }],
+        },
+        {
+          headers: {
+            Authorization: `BEARER ${cohere_api_key}`,
+            "Content-Type": "application/json",
           },
-          {
-            headers: {
-              Authorization: `BEARER ${cohere_api_key}`, // Corrected authorization header
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("AI Response:", response.data);
+        }
+      );
 
-        // Extract the JSON content from the AI response
-        const aiResponseText = response.data.message.content[0].text;
-        const jsonStartIndex = aiResponseText.indexOf("{"); // Find the start of the JSON
-        const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1; // Find the end of the JSON
-        const jsonString = aiResponseText.slice(jsonStartIndex, jsonEndIndex); // Extract the JSON string
-
-        const parsedResults = JSON.parse(jsonString); // Parse the JSON string
-        setAIResults(parsedResults); // Set the parsed results to `aiResults`
+      try {
+        const aiResponseText = response.data.message.content[0]?.text || "";
+        const jsonMatch = aiResponseText.match(/{.*}/s); // Extract JSON safely
+        if (jsonMatch) {
+          const parsedResults = JSON.parse(jsonMatch[0]);
+          setAIResults(parsedResults);
+        } else {
+          console.error("AI response did not contain valid JSON:", aiResponseText);
+        }
       } catch (error) {
-        console.error("Error fetching AI results:", error);
-      } finally {
-        setAILoading(false); // Set AI loading to false when the request completes (or fails)
+        console.error("Error parsing AI results:", error);
       }
-    };
-    fetchData();
-  }
+
+    } catch (error) {
+      console.error("Error fetching AI results:", error);
+    } finally {
+      setAILoading(false);
+    }
+  };
 
   const toggleSelection = (url) => {
     setSelectedLinks((prev) =>
       prev.includes(url) ? prev.filter((item) => item !== url) : [...prev, url]
     );
   };
+
 
   return (
     <div className="h-screen flex flex-col items-center bg-gray-900 text-white p-4">
