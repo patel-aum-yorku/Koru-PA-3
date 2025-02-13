@@ -16,9 +16,12 @@ const SearchResultsPage = () => {
   const [loading, setLoading] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [topic, setTopic] = useState(initialTopic);
+  const [aiResults, setAIResults] = useState(null); // Store AI results
+  const [aiLoading, setAILoading] = useState(false); // Track AI loading state
 
   const fetchSearchResults = async () => {
-    searchResults.length && setSearchResults([]); // Clear previous results
+    setAIResults(null); // Reset AI results when a new search is performed
+    searchResults.length && setSearchResults([]); // Clear previous search results
     setLoading(true);
     try {
       const API_KEY = import.meta.env.VITE_SEARCH_API_KEY;
@@ -33,6 +36,53 @@ const SearchResultsPage = () => {
     }
     setLoading(false);
   };
+
+  useEffect(() => {
+    console.log("Updated Ai Results:", aiResults);
+  }, [aiResults]); // Runs whenever `aiResponse` changes
+
+  // Out of all these links tell me which are age appropriate and understandable for 9th Grade student, tell which ones are not and why Not the json
+  function fetchAIResults() {
+    const searchLinksText = searchResults.map((link) => link.url).join(", ");
+    const cohere_api_key = import.meta.env.VITE_COHERE_API_KEY;
+    const userPrompt = searchLinksText + "Go through all these links make sure it contains info related to the topic " + topic + " and tell which websites are not age appropriate and understandable by " + grade + " and  why. Your response should be a json with schema " +
+      "{'understandable_links': ['link1', 'link2'], 'not_understandable': [{'link3', 'why'}, {'link4', 'why'}] }";
+
+    console.log("User Prompt:", userPrompt);
+    const fetchData = async () => {
+      setAILoading(true); // Set AI loading to true when the request starts
+      try {
+        const response = await axios.post(
+          "https://api.cohere.com/v2/chat",
+          {
+            model: "command-r-plus",
+            messages: [{ role: "user", content: userPrompt }],
+          },
+          {
+            headers: {
+              Authorization: `BEARER ${cohere_api_key}`, // Corrected authorization header
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("AI Response:", response.data);
+
+        // Extract the JSON content from the AI response
+        const aiResponseText = response.data.message.content[0].text;
+        const jsonStartIndex = aiResponseText.indexOf("{"); // Find the start of the JSON
+        const jsonEndIndex = aiResponseText.lastIndexOf("}") + 1; // Find the end of the JSON
+        const jsonString = aiResponseText.slice(jsonStartIndex, jsonEndIndex); // Extract the JSON string
+
+        const parsedResults = JSON.parse(jsonString); // Parse the JSON string
+        setAIResults(parsedResults); // Set the parsed results to `aiResults`
+      } catch (error) {
+        console.error("Error fetching AI results:", error);
+      } finally {
+        setAILoading(false); // Set AI loading to false when the request completes (or fails)
+      }
+    };
+    fetchData();
+  }
 
   const toggleSelection = (url) => {
     setSelectedLinks((prev) =>
@@ -53,16 +103,29 @@ const SearchResultsPage = () => {
           />
           <FaSearch className="absolute right-3 top-3 text-gray-600 cursor-pointer" onClick={fetchSearchResults} />
         </div>
-        <div className="text-left">
-          {loading ? (
-            <p className="text-center text-gray-400">Loading search results...</p>
-          ) : (
-            searchResults.map((result, index) => (
+
+        {/* New "Check with AI" Button */}
+        <button
+          onClick={fetchAIResults}
+          className="w-full mt-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Check with AI
+        </button>
+
+        {loading ? (
+          <p className="text-center text-gray-400">Loading search results...</p>
+        ) : aiLoading ? ( // Show loading indicator for AI response
+          <p className="text-center text-gray-400">Analyzing links with AI...</p>
+        ) : aiResults ? (
+          <div className="text-left">
+            {/* Display Understandable Links */}
+            <h3 className="text-lg text-green-400 mt-4">Understandable Links</h3>
+            {aiResults.understandable_links.map((link, index) => (
               <div key={index} className="flex items-center justify-between mb-2">
                 <input
                   type="checkbox"
-                  checked={selectedLinks.includes(result.url)}
-                  onChange={() => toggleSelection(result.url)}
+                  checked={selectedLinks.includes(link)}
+                  onChange={() => toggleSelection(link)}
                   className="mr-2"
                 />
                 {/* Clicking on this will navigate to the new Article Page */}
@@ -74,15 +137,56 @@ const SearchResultsPage = () => {
                     })
                   }
                 >
-                  {result.title}
-                </span>
-                <a href={result.url} target="_blank" rel="noopener noreferrer" className="ml-2">
-                  <FaExternalLinkAlt className="text-gray-400 hover:text-gray-200" />
+                  {link}
                 </a>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+
+            {/* Display Non-Understandable Links */}
+            <h3 className="text-lg text-red-400 mt-4">Not Understandable Links</h3>
+            {aiResults.not_understandable.map((item, index) => (
+              <div key={index} className="mb-2">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedLinks.includes(item.link)}
+                    onChange={() => toggleSelection(item.link)}
+                    className="mr-2"
+                  />
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    {item.link}
+                  </a>
+                </div>
+                <p className="text-sm text-gray-400 ml-6">{item.why}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          searchResults.map((result, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <input
+                type="checkbox"
+                checked={selectedLinks.includes(result.url)}
+                onChange={() => toggleSelection(result.url)}
+                className="mr-2"
+              />
+              <a
+                href={result.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:underline"
+              >
+                {result.title}
+              </a>
+            </div>
+          ))
+        )}
+
         <div className="mt-4 text-red-400 text-sm">
           <input type="checkbox" checked readOnly className="mr-2" />
           Students are allowed to use AI text summarizer (By Default)
