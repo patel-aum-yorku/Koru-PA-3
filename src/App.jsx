@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProjectForm from './pages/ProjectForm';
 import SearchResultsPage from './pages/SearchResultsPage';
+import ArticlePage from './pages/ArticlePage';
 const App = () => {
 
 
@@ -11,8 +12,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<ProjectForm />} />
           <Route path="/search-results" element={<SearchResultsPage />} />
-          {/* <Route path="/cart" element={<CartPage />} /> */}
-          {/* <Route path="/login" element={<LoginPage />} /> */}
+          <Route path="/article/:id" element={<ArticlePage />} />
           </Routes>
       </Suspense>
     </Router>
