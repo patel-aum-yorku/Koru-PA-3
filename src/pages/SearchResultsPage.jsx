@@ -15,9 +15,10 @@ const SearchResultsPage = () => {
   const [selectedLinks, setSelectedLinks] = useState([]);
   const [topic, setTopic] = useState(initialTopic);
   const [aiResults, setAIResults] = useState(null); // Store AI results
+  const [aiLoading, setAILoading] = useState(false); // Track AI loading state
 
   const fetchSearchResults = async () => {
-    setAIResults(null); // Clear previous AI results
+    setAIResults(null); // Reset AI results when a new search is performed
     searchResults.length && setSearchResults([]); // Clear previous search results
     setLoading(true);
     try {
@@ -51,6 +52,7 @@ const SearchResultsPage = () => {
 
     console.log("User Prompt:", userPrompt);
     const fetchData = async () => {
+      setAILoading(true); // Set AI loading to true when the request starts
       try {
         const response = await axios.post(
           "https://api.cohere.com/v2/chat",
@@ -77,6 +79,8 @@ const SearchResultsPage = () => {
         setAIResults(parsedResults); // Set the parsed results to `aiResults`
       } catch (error) {
         console.error("Error fetching AI results:", error);
+      } finally {
+        setAILoading(false); // Set AI loading to false when the request completes (or fails)
       }
     };
     fetchData();
@@ -112,6 +116,8 @@ const SearchResultsPage = () => {
 
         {loading ? (
           <p className="text-center text-gray-400">Loading search results...</p>
+        ) : aiLoading ? ( // Show loading indicator for AI response
+          <p className="text-center text-gray-400">Analyzing links with AI...</p>
         ) : aiResults ? (
           <div className="text-left">
             {/* Display Understandable Links */}
