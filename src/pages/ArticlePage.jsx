@@ -5,7 +5,8 @@ const ArticlePage = () => {
   const location = useLocation();
   const articleTitle = location.state?.title || "Selected Article";
   const articleUrl = location.state?.url || "";
-
+console.log( articleUrl);
+console.log( articleTitle);
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-4">
       {/* Top Section with Mandatory Button */}
