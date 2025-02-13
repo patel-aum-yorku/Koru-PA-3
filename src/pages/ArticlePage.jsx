@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import axios from "axios";
 
 const transformUrl = async (url) => {
   try {
@@ -50,6 +51,10 @@ const ArticlePage = () => {
   const articleTitle = location.state?.title || "Selected Article";
   const articleUrl = location.state?.url || "";
   const [transformedUrl, setTransformedUrl] = useState("");
+  const [aiResults, setAIResults] = useState(null);
+  const [aiLoading, setAILoading] = useState(false);
+  const [numQuestions, setNumQuestions] = useState(4);
+  const [showQuestions, setShowQuestions] = useState(false);
 
   useEffect(() => {
     const fetchTransformedUrl = async () => {
@@ -61,6 +66,58 @@ const ArticlePage = () => {
       fetchTransformedUrl();
     }
   }, [articleUrl]);
+
+  const fetchAIResults = async () => {
+    console.log("Fetching AI results...");
+    const grade = 6;
+    const cohere_api_key = import.meta.env.VITE_COHERE_API_KEY;
+    const userPrompt = `Go through this link ${articleUrl} generate ${numQuestions} mcq questions for the grade level ${grade}th from this, make sure we have one question which test the understanding of the problem, problem solving, critical thinking and reflection each So total 4 questions. Return the response in the form of json only { 'Q1':  {'Type': Critical Thinking, 'Text': text, 'choice': [1,2,3,4], 'Ans': ans }}`;
+    setAILoading(true);
+    try {
+      const response = await axios.post(
+        "https://api.cohere.com/v2/chat",
+        {
+          model: "command-r-plus",
+          messages: [{ role: "user", content: userPrompt }],
+        },
+        {
+          headers: {
+            Authorization: `BEARER ${cohere_api_key}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("AI response:", response.data);
+      const aiResponseText = response.data.message.content[0]?.text || "";
+
+      // Extract JSON from the response (remove Markdown code block)
+      const jsonStartIndex = aiResponseText.indexOf("[");
+      const jsonEndIndex = aiResponseText.lastIndexOf("]") + 1;
+      const jsonString = aiResponseText.slice(jsonStartIndex, jsonEndIndex);
+
+      if (jsonString) {
+        try {
+          const parsedResults = JSON.parse(jsonString);
+          setAIResults(parsedResults.map(obj => Object.values(obj)[0])); 
+          // setAIResults(parsedResults);
+          setShowQuestions(true);
+          
+        } catch (error) {
+          console.error("Error parsing AI results:", error);
+        }
+      } else {
+        console.error("AI response did not contain valid JSON:", aiResponseText);
+      }
+    } catch (error) {
+      console.error("Error fetching AI results:", error);
+    } finally {
+      setAILoading(false);
+    }
+  };
+
+  const handleCreateQuestions = () => {
+    fetchAIResults();
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-900 text-white p-4">
@@ -117,15 +174,56 @@ const ArticlePage = () => {
         </div>
 
         <p className="mb-2">No. of questions to be generated:</p>
-        <select className="p-2 rounded bg-gray-700 border border-gray-600 text-white">
-          {Array.from({ length: 10 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+        <select
+          className="p-2 rounded bg-gray-700 border border-gray-600 text-white"
+          value={numQuestions}
+          onChange={(e) => setNumQuestions(parseInt(e.target.value))}
+        >
+          {Array.from({ length: 7 }, (_, i) => i + 4).map((num) => (
+            <option key={num} value={num}>
+              {num}</option>
           ))}
         </select>
 
-        <button className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        <button
+          className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          onClick={handleCreateQuestions}
+        >
           Create Reflection Questions
         </button>
+
+        {aiLoading ? (
+          <div className="mt-4 text-center">
+            <p className="text-lg font-semibold text-gray-400">Generating questions with cohere AI...</p>
+          </div>
+        ) : (
+          showQuestions && Array.isArray(aiResults) && aiResults.length > 0 && (
+            <div className="mt-4 text-left">
+              {aiResults.map((question, index) => (
+                <div key={index} className="mb-6">
+                  <h3 className="text-lg font-bold">{index + 1}. {question.Text}</h3>
+                  <p className="text-sm text-gray-400 mb-2">Type: {question.Type}</p>
+                  <div className="space-y-2">
+                    {(question.choices || question.choice)?.map((choice, idx) => (
+                      <label key={idx} className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name={`question-${index}`}
+                          value={choice}
+                          className="form-radio text-blue-500"
+                        />
+                        <span>{choice}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-400 mt-2">Answer: {question.Ans}</p>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+
       </div>
     </div>
   );
