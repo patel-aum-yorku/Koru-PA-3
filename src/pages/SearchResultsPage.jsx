@@ -15,7 +15,7 @@ const SearchResultsPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState([]);
-  const [topic, setTopic] = useState(null);
+  const [topic, setTopic] = useState(initialTopic);
   const [aiResults, setAIResults] = useState(null);
   const [aiLoading, setAILoading] = useState(false);
 
