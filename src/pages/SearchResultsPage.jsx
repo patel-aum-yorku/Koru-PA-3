@@ -104,7 +104,6 @@ const SearchResultsPage = () => {
           <FaSearch className="absolute right-3 top-3 text-gray-600 cursor-pointer" onClick={fetchSearchResults} />
         </div>
 
-        {/* New "Check with AI" Button */}
         <button
           onClick={fetchAIResults}
           className="w-full mt-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -114,11 +113,10 @@ const SearchResultsPage = () => {
 
         {loading ? (
           <p className="text-center text-gray-400">Loading search results...</p>
-        ) : aiLoading ? ( // Show loading indicator for AI response
+        ) : aiLoading ? (
           <p className="text-center text-gray-400">Analyzing links with AI...</p>
         ) : aiResults ? (
           <div className="text-left">
-            {/* Display Understandable Links */}
             <h3 className="text-lg text-green-400 mt-4">Understandable Links</h3>
             {aiResults.understandable_links.map((link, index) => (
               <div key={index} className="flex items-center justify-between mb-2">
@@ -128,7 +126,62 @@ const SearchResultsPage = () => {
                   onChange={() => toggleSelection(link)}
                   className="mr-2"
                 />
-                {/* Clicking on this will navigate to the new Article Page */}
+                <span
+                  className="text-blue-400 hover:underline cursor-pointer"
+                  onClick={() =>
+                    navigate(`/article/${index}`, {
+                      state: { title: link, url: link },
+                    })
+                  }
+                >
+                  {link}
+                </span>
+                <a href={link} target="_blank" rel="noopener noreferrer" className="ml-2">
+                  <FaExternalLinkAlt className="text-gray-400 hover:text-gray-200" />
+                </a>
+              </div>
+            ))}
+
+            <h3 className="text-lg text-red-400 mt-4">Not Understandable Links</h3>
+            {aiResults.not_understandable.map((item, index) => (
+              <div key={index} className="mb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedLinks.includes(item.link)}
+                      onChange={() => toggleSelection(item.link)}
+                      className="mr-2"
+                    />
+                    <span
+                      className="text-blue-400 hover:underline cursor-pointer"
+                      onClick={() =>
+                        navigate(`/article/${index}`, {
+                          state: { title: item.link, url: item.link },
+                        })
+                      }
+                    >
+                      {item.link}
+                    </span>
+                  </div>
+                  <a href={item.link} target="_blank" rel="noopener noreferrer" className="ml-2">
+                    <FaExternalLinkAlt className="text-gray-400 hover:text-gray-200" />
+                  </a>
+                </div>
+                <p className="text-sm text-gray-400 ml-6">{item.why}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-left">
+            {searchResults.map((result, index) => (
+              <div key={index} className="flex items-center justify-between mb-2">
+                <input
+                  type="checkbox"
+                  checked={selectedLinks.includes(result.url)}
+                  onChange={() => toggleSelection(result.url)}
+                  className="mr-2"
+                />
                 <span
                   className="text-blue-400 hover:underline cursor-pointer"
                   onClick={() =>
@@ -137,64 +190,25 @@ const SearchResultsPage = () => {
                     })
                   }
                 >
-                  {link}
+                  {result.title}
+                </span>
+                <a href={result.url} target="_blank" rel="noopener noreferrer" className="ml-2">
+                  <FaExternalLinkAlt className="text-gray-400 hover:text-gray-200" />
                 </a>
               </div>
             ))}
-
-            {/* Display Non-Understandable Links */}
-            <h3 className="text-lg text-red-400 mt-4">Not Understandable Links</h3>
-            {aiResults.not_understandable.map((item, index) => (
-              <div key={index} className="mb-2">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={selectedLinks.includes(item.link)}
-                    onChange={() => toggleSelection(item.link)}
-                    className="mr-2"
-                  />
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline"
-                  >
-                    {item.link}
-                  </a>
-                </div>
-                <p className="text-sm text-gray-400 ml-6">{item.why}</p>
-              </div>
-            ))}
           </div>
-        ) : (
-          searchResults.map((result, index) => (
-            <div key={index} className="flex items-center mb-2">
-              <input
-                type="checkbox"
-                checked={selectedLinks.includes(result.url)}
-                onChange={() => toggleSelection(result.url)}
-                className="mr-2"
-              />
-              <a
-                href={result.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:underline"
-              >
-                {result.title}
-              </a>
-            </div>
-          ))
         )}
 
         <div className="mt-4 text-red-400 text-sm">
           <input type="checkbox" checked readOnly className="mr-2" />
           Students are allowed to use AI text summarizer (By Default)
         </div>
-        <button className="w-full mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-          Finalize
-        </button>
       </div>
+
+      <button className="w-full max-w-2xl mt-4 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+        Finalize
+      </button>
     </div>
   );
 };
