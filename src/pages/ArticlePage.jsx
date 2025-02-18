@@ -53,7 +53,7 @@ const ArticlePage = () => {
   const [transformedUrl, setTransformedUrl] = useState("");
   const [aiResults, setAIResults] = useState(null);
   const [aiLoading, setAILoading] = useState(false);
-  const [numQuestions, setNumQuestions] = useState(4);
+  const [numQuestions, setNumQuestions] = useState(6);
   const [showQuestions, setShowQuestions] = useState(false);
 
   useEffect(() => {
