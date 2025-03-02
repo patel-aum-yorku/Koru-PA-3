@@ -1,5 +1,5 @@
 # **AI-Powered Smart Learning Platform (CuratEd)**  
-
+### Try the demo of the core features here - https://snazzy-cactus-41c85e.netlify.app/
 🚀 **Built at Koru x Ecosystem Hackathon 2025**  
 
 ## **Overview**  
